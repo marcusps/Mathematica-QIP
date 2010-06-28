@@ -4,4 +4,9 @@ QIP Package for Mathematica
 This will be a collection of small but convenient functions for quantum
 information processing calculations.
 
-Soon to be updated.
+List of functions
+-----------------
+
+* ComplexMatrixPlot
+* RealMatrixPlot
+* RealRepHermitianMatrix

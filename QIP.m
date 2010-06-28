@@ -16,7 +16,110 @@ RealMatrixPlot::usage =
    touch.  In other words, the entry with the largest absolute value sets the
    scaling"
   
+RealRepHermitianMatrix::usage = 
+  "RealRepHermitianMatrix[m] computes a real-valued matrix representation of the
+   Hermitian matrix m. This representation consists the real part of the upper
+   triangular section, the imaginary part of the lower triangular section, and the
+   diagonal entries unchanged. This is possible due symmetry of the entries of a
+   Hermitian matrix."
+
 Begin["`Private`"]
+
+Options[ComplexToDisk] = {DiskColor -> Black, LineColor -> White, 
+   MaxScale -> .95};
+
+ComplexToDisk[scale_, c_, index_, OptionsPattern[]] :=
+ Module[{r, i, idx},
+  r = Re[c];
+  i = Im[c];
+  idx = RotateLeft[index];
+  {
+   Opacity[1],
+   OptionValue[DiskColor],
+   Disk[idx, .5 OptionValue[MaxScale] scale Abs[c]],
+   Thickness[.003], OptionValue[LineColor],
+   Line[{idx, idx + .5 OptionValue[MaxScale] scale {r, i}}],
+   Opacity[0],
+   Disk[idx, .5 OptionValue[MaxScale]]
+   }
+  ]
+
+ (*
+  The conventions for matrix indices and graphical coordinates are
+  not consistent, however. For example, index [0,0] in a matrix
+  is actually in the top left corner of a matrix, while coordinates
+  (0,0) is at the bottom right of a plot. To compensate for
+  that in the plots, we must reverse the order of the row.
+  *)
+ 
+Flip[m_] := Reverse[m]
+ 
+Options[ComplexMatrixPlot] = {DiskColor -> Black, LineColor -> White, 
+   MaxScale -> .95};
+
+ComplexMatrixPlot[rho_, opts : OptionsPattern[]] :=
+ Module[{fm, scale},
+  fm = Flip[rho];
+  scale = 1/Max[Abs[rho]];
+  Graphics[
+   MapIndexed[
+    ComplexToDisk[scale, #1, #2, 
+      FilterRules[{opts}, Options[ComplexMatrixPlot]]] &, fm, {2}], 
+   FilterRules[{opts}, Options[Graphics]
+    ]
+   ]
+  ]
+
+ (*
+  We can plot real valued matrices by representing positive valued by \
+  black squares, and negative values by red squares. The sizes of the \
+  squares are scaled such that the largest absolute value has size \
+  one, and all other sizes are scaled accordingly.
+  *)
+
+CenteredRectangle[s_, index_] :=
+ Rectangle[index - {s/2, s/2}, index + {s/2, s/2}]
+
+Options[RealToSquare] = {PosColor -> Black, NegColor -> Red, MaxScale -> .95};
+
+RealToSquare[scale_, r_, index_, OptionsPattern[]] :=
+ Module[{idx},
+  idx = RotateLeft[index];
+  {
+   If[r < 0, OptionValue[NegColor], OptionValue[PosColor]],
+   CenteredRectangle[OptionValue[MaxScale] scale r, idx ],
+   Opacity[0],
+   CenteredRectangle[OptionValue[MaxScale], idx ]
+   }
+  ]
+ 
+Options[RealMatrixPlot] = {PosColor -> Black, NegColor -> Red, 
+   MaxScale -> .95};
+
+RealMatrixPlot[rho_, opts : OptionsPattern[]] :=
+ Module[{fm, scale, xsize, ysize},
+  fm = Flip[rho];
+  scale = 1/Max[Abs[rho]];
+  Graphics[
+   GraphicsGroup[
+    {
+     MapIndexed[
+      RealToSquare[scale, #1, #2, 
+        FilterRules[{opts}, Options[RealToSquare]]] &, fm, {2}]
+     }
+    ]
+   , FilterRules[{opts}, Options[Graphics]]]
+  ]
+
+UpperTriangularPart[rho_] := 
+ MapIndexed[If[#2[[1]] < #2[[2]], #1, 0] &, rho, {2}]
+
+LowerTriangularPart[rho_] := 
+ MapIndexed[If[#2[[1]] > #2[[2]], #1, 0] &, rho, {2}]
+
+RealRepHermitianMatrix[rho_] :=
+  Re[UpperTriangularPart[rho]] + Im[LowerTriangularPart[rho]] + 
+  Re[DiagonalMatrix[Diagonal[rho]]]
 
 End[]
 
