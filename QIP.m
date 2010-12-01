@@ -1,5 +1,23 @@
 BeginPackage["QIP`"]
 
+    (*
+    QIP is a Mathematic package of useful functions for quantum information processing
+    Copyright (C) 2010  Marcus P. da Silva
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    *)
+
 ComplexMatrixPlot::usage =
   "ComplexMatrixPlot[m] plots the entries in a complex-valued matrix as an array
    of notched disks.The radius of the disk is proportional to the absolute value
