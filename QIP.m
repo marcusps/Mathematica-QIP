@@ -1,7 +1,7 @@
 BeginPackage["QIP`"]
 
     (*
-    QIP is a Mathematic package of useful functions for quantum information processing
+    QIP is a Mathematica package of useful functions for quantum information processing
     Copyright (C) 2010  Marcus P. da Silva
 
     This program is free software: you can redistribute it and/or modify
