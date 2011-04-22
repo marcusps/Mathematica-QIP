@@ -41,6 +41,12 @@ RealRepHermitianMatrix::usage =
    diagonal entries unchanged. This is possible due symmetry of the entries of a
    Hermitian matrix."
 
+Pauli::usage =
+  "Pauli[k] returns the Pauli matrix corresponding to index k."
+
+Tensor::usage =
+  "Tensor[l] computes the tensor product of a list of matrices."
+
 Begin["`Private`"]
 
 Options[ComplexToDisk] = {DiskColor -> Black, LineColor -> White, 
@@ -138,6 +144,10 @@ LowerTriangularPart[rho_] :=
 RealRepHermitianMatrix[rho_] :=
   Re[UpperTriangularPart[rho]] + Im[LowerTriangularPart[rho]] + 
   Re[DiagonalMatrix[Diagonal[rho]]]
+
+Tensor[l_] := Apply[KroneckerProduct,l];
+
+Pauli[x_] := Switch[x,0,{{1,0},{0,1}},1,{{0,1},{1,0}},2,{{0,-I},{I,0}},3,{{1,0},{0,-1}}];
 
 End[]
 
