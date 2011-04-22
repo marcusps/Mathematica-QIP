@@ -23,6 +23,8 @@ information processing calculations, all licensed under GPL.
 List of functions
 -----------------
 
+* Pauli
+* Tensor
 * ComplexMatrixPlot
 * RealMatrixPlot
 * RealRepHermitianMatrix
