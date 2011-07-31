@@ -69,7 +69,7 @@ Tensor::usage =
 
 ComplexMatrixPlot::usage =
   "ComplexMatrixPlot[m] plots the entries in a complex-valued matrix as an array
-   of notched disks.The radius of the disk is proportional to the absolute value
+   of notched disks. The radius of the disk is proportional to the absolute value
    of the matrix element, and the radial notch corresponds to the 
    phase/angle/argument of the complex number. By default, the disks are scaled 
    so that the disks never overlap or touch. In other words, the entry with the
@@ -91,15 +91,15 @@ RealRepHermitianMatrix::usage =
    Hermitian matrix.";
 
 
-Vec::usage="";
-VecInv::usage="";
-HermitianPart::usage="";
-SkewHermitianPart::usage="";
-ChoiLiouvilleInvolution::usage="";
-MaximallyEntangledDensityMatrix::usage="";
-HarrRandomUnitary::usage="";
-SquareMatrixQ::usage="";
-Reshape::usage="";
+Vec::usage="Vec[m] takes a matrix m and returns a column vector corresponding to the stacked columns of the matrix.";
+VecInv::usage="VecInv[m,r,c] takes a vectorized matrix and returns the corresponding matrix with r rows and c columns.";
+HermitianPart::usage="HermitianPart[m] returns the Hermitian part of the matrix m.";
+SkewHermitianPart::usage="SkewHermitianPart[m] returns the skew-Hermitian part of the matrix m.";
+ChoiLiouvilleInvolution::usage="ChoiLiouvilleInvolution[m] rearranges the matrix elements of m according to the involution mapping between the Choi matrix of a process and the Liouville (or natural) representation of the same process assuming column major ordering.";
+MaximallyEntangledDensityMatrix::usage="MaximallyEntangledDensityMatrix[d] returns the maximally entangled state of two d-dimensional subsystems, with perfect correlations between the basis states.";
+HarrRandomUnitary::usage="HarrRandomUnitary[d] returns a Harr-distributed unitary acting on a Hilber space of dimension d.";
+SquareMatrixQ::usage="SquareMatrixQ[m] returns True if m is a square matrix and False otherwise.";
+Reshape::usage="Reshape[m,r,c] reshapes an arbitrarily nested list of elements into a matrix with r rows and c columns. It is not compatible with Vec and VecInv.";
 
 
 Begin["`Private`"];
@@ -167,7 +167,7 @@ TrA[m_?SquareMatrixQ,da_/;da>0&&da\[Element]Integers]:=Sum[(Bra[i,da]\[CircleTim
 TrB[m_?SquareMatrixQ,db_/;db>0&&db\[Element]Integers]:=Sum[(Id[Dimensions[m][[2]]/db]\[CircleTimes]Bra[i,db]).m.(Id[Dimensions[m][[2]]/db]\[CircleTimes]Ket[i,db]),{i,0,db-1}]
 
 
-ChoiLiouvilleInvolution[m_?SquareMatrixQ[m]]:=
+ChoiLiouvilleInvolution[m_?SquareMatrixQ]:=
 Block[{d=Sqrt[Dimensions[m][[1]]]},
   Sum[
     (KetBra[n,i,d]\[CircleTimes]KetBra[l,l,d])
