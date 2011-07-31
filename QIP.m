@@ -1,8 +1,11 @@
-BeginPackage["QIP`"]
+(* ::Package:: *)
 
-    (*
+BeginPackage["QIP`"];
+
+
+(*
     QIP is a Mathematica package of useful functions for quantum information processing
-    Copyright (C) 2010  Marcus P. da Silva
+    Copyright (C) 2011  Marcus P. da Silva
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,13 +21,59 @@ BeginPackage["QIP`"]
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
     *)
 
+
+Id::usage = "Id[n] return an identity matrix of dimension n.";
+
+
+Ket::usage = "Ket[n,d] returns the unit column vector of index 0 <= n < d in a d dimensional Hilbert space.";
+
+
+Bra::usage = "Bra[n,d] returns the unit row vector of index 0 <= n < d in a d dimensional Hilbert space.";
+
+
+KetBra::usage="KetBra[i,j,d] returns a matrix which maps the Ket[j,d] to Ket[i,d].";
+
+
+Projector::usage="Returns the projector correcponding to a given ket.";
+
+
+TrA::usage = "TrA[rho,da] returns the partial trace of rho, by trading over the first da dimensions.";
+
+
+TrB::usage = "TrB[rho,db] returns the partial trace of rho, by trading over the last db dimensions.";
+
+
+CircleTimes::usage = "CircleTime is the binary KroneckerProduct between matrices or vectors.";
+
+
+Pauli::usage =
+  "Pauli[k] returns the Pauli matrix corresponding to index k.";
+
+Tensor::usage =
+  "Tensor[l] computes the tensor product of a list of matrices.";
+
+
+\[Sigma]x={
+ {0, 1},
+ {1, 0}
+};
+\[Sigma]y={
+ {0, -I},
+ {I, 0}
+};
+\[Sigma]z={
+ {1, 0},
+ {0, -1}
+};
+
+
 ComplexMatrixPlot::usage =
   "ComplexMatrixPlot[m] plots the entries in a complex-valued matrix as an array
    of notched disks.The radius of the disk is proportional to the absolute value
    of the matrix element, and the radial notch corresponds to the 
    phase/angle/argument of the complex number. By default, the disks are scaled 
    so that the disks never overlap or touch. In other words, the entry with the
-   largest absolute values sets the scaling of all entries in the plot."
+   largest absolute values sets the scaling of all entries in the plot.";
   
 RealMatrixPlot::usage =
   "RealMatrixPlot[m] plots the entries in a real-valued matrix as an array of 
@@ -32,22 +81,120 @@ RealMatrixPlot::usage =
    value of the entry, and color indicates whether it is negative (Red) or 
    positive (Black). All squares are scaled so that no entries overlap or 
    touch.  In other words, the entry with the largest absolute value sets the
-   scaling"
+   scaling";
   
 RealRepHermitianMatrix::usage = 
   "RealRepHermitianMatrix[m] computes a real-valued matrix representation of the
    Hermitian matrix m. This representation consists the real part of the upper
    triangular section, the imaginary part of the lower triangular section, and the
    diagonal entries unchanged. This is possible due symmetry of the entries of a
-   Hermitian matrix."
+   Hermitian matrix.";
 
-Pauli::usage =
-  "Pauli[k] returns the Pauli matrix corresponding to index k."
 
-Tensor::usage =
-  "Tensor[l] computes the tensor product of a list of matrices."
+Vec::usage="";
+VecInv::usage="";
+HermitianPart::usage="";
+SkewHermitianPart::usage="";
+ChoiLiouvilleInvolution::usage="";
+MaximallyEntangledDensityMatrix::usage="";
+HarrRandomUnitary::usage="";
+SquareMatrixQ::usage="";
+Reshape::usage="";
 
-Begin["`Private`"]
+
+Begin["`Private`"];
+
+
+CircleTimes[x__]:=KroneckerProduct[x]
+
+
+Id[d_]:=IdentityMatrix[d]
+
+
+\[Sigma]x=({
+ {0, 1},
+ {1, 0}
+});
+\[Sigma]y=({
+ {0, -I},
+ {I, 0}
+});
+\[Sigma]z=({
+ {1, 0},
+ {0, -1}
+});
+
+
+Pauli[x_] := Switch[x,0,Id[2],1,\[Sigma]x,2,\[Sigma]y,3,\[Sigma]z];
+
+
+\[Sigma]=Pauli;
+
+
+Tensor[l_] := Apply[KroneckerProduct,l];
+
+
+Ket[n_,d_]:={UnitVector[d,n+1]}\[Transpose];
+
+
+Bra[n_,d_]:=Ket[n,d]\[ConjugateTranspose];
+
+
+KetBra[i_,j_,d_]:=Ket[i,d].Bra[j,d]
+
+
+Projector[\[Psi]_]:=\[Psi].\[Psi]\[ConjugateTranspose];
+
+
+Reshape[m_,_,l_]:=Partition[Flatten[m],l]
+
+
+Vec[mtx_?MatrixQ]:=Partition[Flatten[mtx\[Transpose]],1]
+
+
+VecInv[vec_,m_/;m>0&&m\[Element]Integers,n_/;n>0&&n\[Element]Integers]:=Partition[Flatten[vec],n]\[Transpose]
+
+
+HermitianPart[m_?SquareMatrixQ]:=1/2 (m+m\[ConjugateTranspose])
+
+
+SkewHermitianPart[m_?SquareMatrixQ]:=1/2 (m-m\[ConjugateTranspose])
+
+
+TrA[m_?SquareMatrixQ,da_/;da>0&&da\[Element]Integers]:=Sum[(Bra[i,da]\[CircleTimes]Id[Dimensions[m][[2]]/da]).m.(Ket[i,da]\[CircleTimes]Id[Dimensions[m][[2]]/da]),{i,0,da-1}]
+
+
+TrB[m_?SquareMatrixQ,db_/;db>0&&db\[Element]Integers]:=Sum[(Id[Dimensions[m][[2]]/db]\[CircleTimes]Bra[i,db]).m.(Id[Dimensions[m][[2]]/db]\[CircleTimes]Ket[i,db]),{i,0,db-1}]
+
+
+ChoiLiouvilleInvolution[m_?SquareMatrixQ[m]]:=
+Block[{d=Sqrt[Dimensions[m][[1]]]},
+  Sum[
+    (KetBra[n,i,d]\[CircleTimes]KetBra[l,l,d])
+    .m.
+    (KetBra[j,j,d]\[CircleTimes]KetBra[n,i,d]),
+    {i,0,d-1},
+    {j,0,d-1},
+    {l,0,d-1},
+    {n,0,d-1}
+  ]
+]
+
+
+MaximallyEntangledDensityMatrix[d_/;d>0&&d\[Element]Integers]:=
+  1/d Projector[Sum[Ket[i,d]\[CircleTimes]Ket[i,d],{i,0,d-1}]]
+
+
+HarrRandomUnitary[d_/;d>0&&d\[Element]Integers]:=
+  Orthogonalize[
+    RandomReal[NormalDistribution[0,1],{d,d}]+
+    I RandomReal[NormalDistribution[0,1],{d,d}]
+  ]
+
+
+SquareMatrixQ = MatrixQ @ # && Equal @@ Dimensions @ # &;
+
+
 
 Options[ComplexToDisk] = {DiskColor -> Black, LineColor -> White, 
    MaxScale -> .95};
@@ -145,10 +292,8 @@ RealRepHermitianMatrix[rho_] :=
   Re[UpperTriangularPart[rho]] + Im[LowerTriangularPart[rho]] + 
   Re[DiagonalMatrix[Diagonal[rho]]]
 
-Tensor[l_] := Apply[KroneckerProduct,l];
 
-Pauli[x_] := Switch[x,0,{{1,0},{0,1}},1,{{0,1},{1,0}},2,{{0,-I},{I,0}},3,{{1,0},{0,-1}}];
 
-End[]
+End[];
 
-EndPackage[]
+EndPackage[];
