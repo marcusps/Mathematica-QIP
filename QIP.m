@@ -37,10 +37,10 @@ KetBra::usage="KetBra[i,j,d] returns a matrix which maps the Ket[j,d] to Ket[i,d
 Projector::usage="Returns the projector correcponding to a given ket.";
 
 
-TrA::usage = "TrA[rho,da] returns the partial trace of rho, by trading over the first da dimensions.";
+TrA::usage = "TrA[rho,da] returns the partial trace of rho, by tracing over the first da dimensions.";
 
 
-TrB::usage = "TrB[rho,db] returns the partial trace of rho, by trading over the last db dimensions.";
+TrB::usage = "TrB[rho,db] returns the partial trace of rho, by tracing over the last db dimensions.";
 
 
 CircleTimes::usage = "CircleTime is the binary KroneckerProduct between matrices or vectors.";
@@ -53,18 +53,9 @@ Tensor::usage =
   "Tensor[l] computes the tensor product of a list of matrices.";
 
 
-\[Sigma]x={
- {0, 1},
- {1, 0}
-};
-\[Sigma]y={
- {0, -I},
- {I, 0}
-};
-\[Sigma]z={
- {1, 0},
- {0, -1}
-};
+\[Sigma]x::usage="Pauli matrix x, acting on 2 levels."
+\[Sigma]y::usage="Pauli matrix y, acting on 2 levels."
+\[Sigma]z::usage="Pauli matrix z, acting on 2 levels."
 
 
 ComplexMatrixPlot::usage =
@@ -97,12 +88,42 @@ HermitianPart::usage="HermitianPart[m] returns the Hermitian part of the matrix 
 SkewHermitianPart::usage="SkewHermitianPart[m] returns the skew-Hermitian part of the matrix m.";
 ChoiLiouvilleInvolution::usage="ChoiLiouvilleInvolution[m] rearranges the matrix elements of m according to the involution mapping between the Choi matrix of a process and the Liouville (or natural) representation of the same process assuming column major ordering.";
 MaximallyEntangledDensityMatrix::usage="MaximallyEntangledDensityMatrix[d] returns the maximally entangled state of two d-dimensional subsystems, with perfect correlations between the basis states.";
-HarrRandomUnitary::usage="HarrRandomUnitary[d] returns a Harr-distributed unitary acting on a Hilber space of dimension d.";
+HaarRandomUnitary::usage="HarrRandomUnitary[d] returns a Harr-distributed unitary acting on a Hilber space of dimension d.";
 SquareMatrixQ::usage="SquareMatrixQ[m] returns True if m is a square matrix and False otherwise.";
 Reshape::usage="Reshape[m,r,c] reshapes an arbitrarily nested list of elements into a matrix with r rows and c columns. It is not compatible with Vec and VecInv.";
+Liou::usage=""
+LiouvilleRepresentation::usage=""
+Dissipator::usage=""
+Hamiltonian::usage=""
+Purity::usage="Computes the purity of a density matrix."
+MultiPauli::usage="Return the matrix corresponding to the tensor product of the single qubit Pauli operators with indices given by a list of integers between 0 and 3"
 
 
 Begin["`Private`"];
+
+
+Purity[m_]:=Tr[MatrixPower[m,2]]
+
+
+InsertAt[a_,j_,L_]:=MapAt[a&,Table[0,{i,L}],j]
+
+
+CirclePlus[x__]:=ArrayFlatten[MapIndexed[InsertAt[#1,#2[[1]],Length[List[x]]]&,List[x]]]
+
+
+BlockMatrix[m_]:=ArrayFlatten[m]
+
+
+LiouvilleRepresentation[left_?MatrixQ,right_?MatrixQ]:=Transpose[right]\[CircleTimes]left;
+
+
+Liou=LiouvilleRepresentation;
+
+
+Hamiltonian[H_?SquareMatrixQ]:=-I Liou[H,Id[Dimensions[H][[1]]]]+I Liou[Id[Dimensions[H][[1]]],H]
+
+
+Dissipator[m_?SquareMatrixQ]:=Liou[m,m\[ConjugateTranspose]]-1/2 Liou[m\[ConjugateTranspose].m,Id[Dimensions[m][[1]]]]-1/2 Liou[Id[Dimensions[m][[1]]],m\[ConjugateTranspose].m]
 
 
 CircleTimes[x__]:=KroneckerProduct[x]
@@ -111,21 +132,24 @@ CircleTimes[x__]:=KroneckerProduct[x]
 Id[d_]:=IdentityMatrix[d]
 
 
-\[Sigma]x=({
+\[Sigma]x={
  {0, 1},
  {1, 0}
-});
-\[Sigma]y=({
+};
+\[Sigma]y={
  {0, -I},
  {I, 0}
-});
-\[Sigma]z=({
+};
+\[Sigma]z={
  {1, 0},
  {0, -1}
-});
+};
 
 
 Pauli[x_] := Switch[x,0,Id[2],1,\[Sigma]x,2,\[Sigma]y,3,\[Sigma]z];
+
+
+MultiPauli[l_]:=Fold[KroneckerProduct,{{1}},Map[Pauli,l]];
 
 
 \[Sigma]=Pauli;
@@ -185,7 +209,7 @@ MaximallyEntangledDensityMatrix[d_/;d>0&&d\[Element]Integers]:=
   1/d Projector[Sum[Ket[i,d]\[CircleTimes]Ket[i,d],{i,0,d-1}]]
 
 
-HarrRandomUnitary[d_/;d>0&&d\[Element]Integers]:=
+HaarRandomUnitary[d_/;d>0&&d\[Element]Integers]:=
   Orthogonalize[
     RandomReal[NormalDistribution[0,1],{d,d}]+
     I RandomReal[NormalDistribution[0,1],{d,d}]
